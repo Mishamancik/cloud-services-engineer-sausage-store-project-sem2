@@ -1,3 +1,5 @@
 .env
 .kube
 .DS_Store
+
+local/
