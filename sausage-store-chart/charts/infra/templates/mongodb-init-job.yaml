@@ -1,0 +1,59 @@
+{{- if .Values.mongodb.init.enabled }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-mongodb-init
+  annotations:
+    helm.sh/hook: post-install
+    helm.sh/hook-weight: "5"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: mongodb-init
+          image: {{ .Values.mongodb.image }}
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: mongodb-conf
+                  key: MONGO_INITDB_ROOT_USERNAME
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: mongodb-conf
+                  key: MONGO_INITDB_ROOT_PASSWORD
+          command:
+            - bash
+            - -ec
+            - |
+              until mongosh --host mongodb --port {{ .Values.mongodb.containerPort }} \
+                -u "${MONGO_INITDB_ROOT_USERNAME}" -p "${MONGO_INITDB_ROOT_PASSWORD}" \
+                --authenticationDatabase admin --eval "db.adminCommand('ping')" &>/dev/null; do
+                echo "Waiting for MongoDB..."
+                sleep 2
+              done
+
+              mongosh --host mongodb --port {{ .Values.mongodb.containerPort }} \
+                -u "${MONGO_INITDB_ROOT_USERNAME}" -p "${MONGO_INITDB_ROOT_PASSWORD}" \
+                --authenticationDatabase admin --eval '
+              const dbName = "{{ .Values.mongodb.init.database }}";
+              const userName = "{{ .Values.mongodb.init.username }}";
+              const userPassword = "{{ .Values.mongodb.init.password }}";
+              const targetDb = db.getSiblingDB(dbName);
+
+              if (targetDb.getUser(userName) === null) {
+                targetDb.createUser({
+                  user: userName,
+                  pwd: userPassword,
+                  roles: [{ role: "readWrite", db: dbName }]
+                });
+                print("Created user " + userName + " for database " + dbName);
+              } else {
+                print("User " + userName + " already exists in database " + dbName);
+              }
+              '
+{{- end }}
