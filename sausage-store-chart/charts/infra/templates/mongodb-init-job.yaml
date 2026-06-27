@@ -5,7 +5,7 @@ kind: Job
 metadata:
   name: {{ .Release.Name }}-mongodb-init
   annotations:
-    helm.sh/hook: post-install
+    helm.sh/hook: post-install,post-upgrade
     helm.sh/hook-weight: "5"
     helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
 spec:
@@ -15,6 +15,8 @@ spec:
       containers:
         - name: mongodb-init
           image: {{ .Values.mongodb.image }}
+          resources:
+{{ toYaml .Values.mongodb.init.resources | indent 12 }}
           env:
             - name: MONGO_INITDB_ROOT_USERNAME
               valueFrom:
@@ -40,20 +42,29 @@ spec:
               mongosh --host mongodb --port {{ .Values.mongodb.containerPort }} \
                 -u "${MONGO_INITDB_ROOT_USERNAME}" -p "${MONGO_INITDB_ROOT_PASSWORD}" \
                 --authenticationDatabase admin --eval '
-              const dbName = "{{ .Values.mongodb.init.database }}";
-              const userName = "{{ .Values.mongodb.init.username }}";
-              const userPassword = "{{ .Values.mongodb.init.password }}";
-              const targetDb = db.getSiblingDB(dbName);
-
-              if (targetDb.getUser(userName) === null) {
-                targetDb.createUser({
-                  user: userName,
-                  pwd: userPassword,
-                  roles: [{ role: "readWrite", db: dbName }]
-                });
-                print("Created user " + userName + " for database " + dbName);
-              } else {
-                print("User " + userName + " already exists in database " + dbName);
+              function ensureUser(dbName, userName, userPassword) {
+                const targetDb = db.getSiblingDB(dbName);
+                if (targetDb.getUser(userName) === null) {
+                  targetDb.createUser({
+                    user: userName,
+                    pwd: userPassword,
+                    roles: [{ role: "readWrite", db: dbName }]
+                  });
+                  print("Created user " + userName + " for database " + dbName);
+                } else {
+                  print("User " + userName + " already exists in database " + dbName);
+                }
               }
+
+              ensureUser(
+                "{{ .Values.mongodb.init.reportService.database }}",
+                "{{ .Values.mongodb.init.reportService.username }}",
+                "{{ .Values.mongodb.init.reportService.password }}"
+              );
+              ensureUser(
+                "{{ .Values.mongodb.init.backendService.database }}",
+                "{{ .Values.mongodb.init.backendService.username }}",
+                "{{ .Values.mongodb.init.backendService.password }}"
+              );
               '
 {{- end }}

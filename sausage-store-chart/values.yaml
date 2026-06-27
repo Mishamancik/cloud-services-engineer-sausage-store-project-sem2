@@ -22,11 +22,11 @@ frontend:
   image: mishamancik/sausage-frontend:latest
   resources:
     requests:
-      memory: "128Mi"
+      memory: "64Mi"
       cpu: "100m"
     limits:
       memory: "128Mi"
-      cpu: "1"
+      cpu: "300m"
   nginxConf: nginx.conf
 
 backend:
@@ -53,20 +53,20 @@ backend:
   imagePullPolicy: Always
   resources:
     requests:
-      memory: "256Mi"
+      memory: "128Mi"
       cpu: "100m"
     limits:
       memory: "512Mi"
-      cpu: "1"
+      cpu: "500m"
   containerPort: 8080
   livenessProbe:
     httpGet:
       path: /actuator/health
       port: 8080
-    initialDelaySeconds: 30
-    periodSeconds: 10
-    timeoutSeconds: 5
-    failureThreshold: 3
+    initialDelaySeconds: 60
+    periodSeconds: 15
+    timeoutSeconds: 10
+    failureThreshold: 5
   vpa:
     updatePolicy:
       updateMode: "Off"
@@ -89,14 +89,14 @@ backend-report:
     mongoUri: mongodb://report:reportpassword@mongodb:27017/reports?authSource=reports
   resources:
     requests:
-      memory: "128Mi"
+      memory: "64Mi"
       cpu: "50m"
     limits:
       memory: "256Mi"
-      cpu: "500m"
+      cpu: "300m"
   hpa:
     minReplicas: 1
-    maxReplicas: 3
+    maxReplicas: 2
     metrics:
       - type: Resource
         resource:
@@ -112,11 +112,11 @@ infra:
     storage: 1Gi
     resources:
       requests:
-        memory: "256Mi"
+        memory: "128Mi"
         cpu: "100m"
       limits:
         memory: "512Mi"
-        cpu: "500m"
+        cpu: "300m"
     env:
       POSTGRES_USER: store
       POSTGRES_PASSWORD: storepassword
@@ -128,8 +128,27 @@ infra:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: rootpassword
     containerPort: 27017
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "256Mi"
+        cpu: "300m"
     init:
       enabled: true
-      database: reports
-      username: report
-      password: reportpassword
+      reportService:
+        database: reports
+        username: report
+        password: reportpassword
+      backendService:
+        database: sausage-store
+        username: reports
+        password: reportspassword
+      resources:
+        requests:
+          memory: "128Mi"
+          cpu: "50m"
+        limits:
+          memory: "512Mi"
+          cpu: "200m"
