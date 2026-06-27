@@ -19,7 +19,7 @@ frontend:
     path: /
     pathType: Prefix
   containerPort: 80
-  image: YOUR_DOCKERHUB/sausage-frontend:latest
+  image: mishamancik/sausage-frontend:latest
   resources:
     requests:
       memory: "128Mi"
@@ -49,7 +49,7 @@ backend:
     rollingUpdate:
       maxUnavailable: 0
       maxSurge: 1
-  image: YOUR_DOCKERHUB/sausage-backend:latest
+  image: mishamancik/sausage-backend:latest
   imagePullPolicy: Always
   resources:
     requests:
@@ -82,7 +82,7 @@ backend-report:
   revisionHistoryLimit: 15
   strategy:
     type: Recreate
-  image: YOUR_DOCKERHUB/sausage-backend-report:latest
+  image: mishamancik/sausage-backend-report:latest
   containerPort: 8080
   env:
     port: "8080"
