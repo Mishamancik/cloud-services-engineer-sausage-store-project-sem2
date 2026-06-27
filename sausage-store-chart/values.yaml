@@ -86,7 +86,7 @@ backend-report:
   containerPort: 8080
   env:
     port: "8080"
-    mongoUri: mongodb://root:rootpassword@mongodb:27017/reports?authSource=admin
+    mongoUri: mongodb://report:reportpassword@mongodb:27017/reports?authSource=reports
   resources:
     requests:
       memory: "128Mi"
@@ -123,7 +123,13 @@ infra:
       POSTGRES_DB: sausage-store
       PGDATA: /var/lib/postgresql/data/pgdata
   mongodb:
+    image: mongo:7.0
     env:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: rootpassword
     containerPort: 27017
+    init:
+      enabled: true
+      database: reports
+      username: report
+      password: reportpassword
