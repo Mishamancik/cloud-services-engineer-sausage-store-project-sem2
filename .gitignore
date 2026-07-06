@@ -4,3 +4,11 @@
 
 local/
 *.tgz
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+infra/terraform/**/terraform.tfvars
+infra/terraform/vault-vm/authorized_key.json

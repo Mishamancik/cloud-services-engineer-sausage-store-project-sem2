@@ -1,9 +1,11 @@
 global:
   imagePullPolicy: Always
-  ###vault:
-  ###  host: ip
-  ###  name: vault
-  ###  vaultToken: someToken
+  vault:
+    enabled: true
+    host: "111.88.244.25"
+    port: 8200
+    scheme: http
+    vaultToken: ""
 
 
 frontend:
@@ -35,9 +37,6 @@ backend:
     port: "8080"
     scrape: "true"
   env:
-    postgresUri: jdbc:postgresql://postgresql:5432/sausage-store
-    postgresUser: store
-    postgresPassword: storepassword
     reportPath: /logs/reports
     logPath: /logs
   service:
