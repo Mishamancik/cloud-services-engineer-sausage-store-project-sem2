@@ -10,7 +10,7 @@ terraform {
     endpoints = {
       s3 = "https://storage.yandexcloud.net"
     }
-    bucket = "kittygram-s3-bucket"
+    bucket = "finalproject-s3-bucket"
     region = "ru-central1"
     key    = "tf-state.tfstate"
 
@@ -31,4 +31,3 @@ provider "yandex" {
   folder_id                = var.folder_id
   zone                     = var.zone
 }
-
