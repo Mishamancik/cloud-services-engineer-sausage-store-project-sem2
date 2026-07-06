@@ -21,7 +21,7 @@ terraform {
 
     # Terraform State Lock, чтобы избежать одновременного изменения состояния несколькими пользователями
     dynamodb_endpoint = "https://docapi.serverless.yandexcloud.net/ru-central1/b1gborgk3k44sgna3bvh/etn3fe2lnra305cr05co"
-    dynamodb_table    = "ydb524"
+    dynamodb_table    = "table677"
   }
 }
 
